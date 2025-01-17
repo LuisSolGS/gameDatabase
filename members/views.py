@@ -108,3 +108,37 @@ def search(request):
     myjson2 = json.dumps(my_json, indent=4, sort_keys=True)
     
     return HttpResponse(myjson2)
+    
+def game(request):
+    gameID = request.GET.get('id', 'all');
+    
+    url = "https://api.igdb.com/v4/games/"
+
+    querystring = {"":""}
+
+    fields = "fields *; "
+    where = "where id = " + gameID + ";"
+    
+    payload = fields + where;
+    
+    headers = {
+        "Content-Type": "text/plain",
+        "User-Agent": "insomnia/10.3.0",
+        "Client-ID": ClientID,
+        "Authorization": "Bearer " + token
+    }
+
+    response = requests.request("POST", url, data=payload, headers=headers, params=querystring)
+    
+    wrapper = IGDBWrapper(ClientID, token)
+    
+    # Protobuf API request
+    byte_array = wrapper.api_request(
+                'games', # Note the '.pb' suffix at the endpoint
+                payload
+              )
+    my_new_string_value = byte_array.decode("utf-8")
+    my_json = json.loads(my_new_string_value)
+    myjson2 = json.dumps(my_json, indent=4, sort_keys=True)
+    
+    return HttpResponse(myjson2)
